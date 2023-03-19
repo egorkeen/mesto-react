@@ -11,11 +11,13 @@ function App() {
   const [isEditProfilePopupOpen, setEditProfilePopupOpen] = useState(false);
   const [isAddPlacePopupOpen, setAddPlacePopupOpen] = useState(false);
   const [isEditAvatarPopupOpen, setEditAvatarPopupOpen] = useState(false);
+  const [selectedCard, setSelectedCard] = useState(null);
 
   function closeAllPopups() {
     setEditProfilePopupOpen(false);
     setAddPlacePopupOpen(false);
     setEditAvatarPopupOpen(false);
+    setSelectedCard(null);
   }
 
   function handleEditAvatarClick() {
@@ -30,13 +32,18 @@ function App() {
     setAddPlacePopupOpen(true);
   }
 
+  function handleCardClick(card) {
+    setSelectedCard(card);
+  }
+
   return (
 <div className="page">
   <Header />
   <Main 
   onEditProfile={handleEditProfileClick} 
   onAddPlace={handleAddPlaceClick} 
-  onEditAvatar={handleEditAvatarClick} />
+  onEditAvatar={handleEditAvatarClick}
+  onCardClick={handleCardClick} />
 
   <PopupWithForm 
   name="profile" 
@@ -130,7 +137,7 @@ function App() {
       aria-label="Подтвердить удаление картинки">Да</button>
   </PopupWithForm>
 
-  <ImagePopup/>
+  <ImagePopup card={selectedCard} onClose={closeAllPopups} />
   <Footer />
   <template className="template" />
 </div>
