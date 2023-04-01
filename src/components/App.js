@@ -3,15 +3,45 @@ import Header from './Header.js';
 import Main from './Main.js';
 import Footer from './Footer.js';
 import PopupWithForm from './PopupWithForm.js';
+import EditProfilePopup from './EditProfilePopup';
+import EditAvatarPopup from './EditAvatarPopup';
+import AddPlacePopup from './AddPlacePopup';
 import ImagePopup from './ImagePopup.js';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { CurrentUserContext } from '../contexts/CurrentUserContext';
+import api from '../utils/Api';
 
 function App() {
-
+  const [cards, setCards] = useState([]);
   const [isEditProfilePopupOpen, setEditProfilePopupOpen] = useState(false);
   const [isAddPlacePopupOpen, setAddPlacePopupOpen] = useState(false);
   const [isEditAvatarPopupOpen, setEditAvatarPopupOpen] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
+  const [currentUser, setCurrentUser] = useState();
+
+useEffect(() => {
+  api.getUserData()
+    .then((res) => {
+      setCurrentUser(res);
+    })
+    .catch((err) => console.log(err));
+}, []);
+
+useEffect(() => {
+  api.getInitialCards()
+  .then((res) => {
+    setCards(res.map((dataCard) => {
+      return {
+        _id: dataCard._id,
+        name: dataCard.name,
+        link: dataCard.link,
+        owner: dataCard.owner,
+        likes: dataCard.likes
+      }
+    }))
+  })
+  .catch((err) => console.log(err))
+}, [])
 
   function closeAllPopups() {
     setEditProfilePopupOpen(false);
@@ -36,97 +66,89 @@ function App() {
     setSelectedCard(card);
   }
 
+  function handleCardDelete(card) {
+    api.deleteCard(card._id)
+    .then(() => {
+      const updatedCards = cards.slice().filter(c => c !== card);
+      setCards(updatedCards)
+    })
+    .catch((err) => console.log(err));
+  }
+
+  function handleCardLike(card) {
+    const isLiked = card.likes.some(i => i._id === currentUser._id);
+
+    api.changeLikeCardStatus(card._id, !isLiked)
+    .then((newCard) => {
+      setCards((state) => state.map((c) => c._id === card._id ? newCard : c));
+    });
+  };
+
+  function handleUpdateUser(userData) {
+    api.setUserData(userData)
+    .then((updatedUserData) => {
+      setCurrentUser(updatedUserData);
+      closeAllPopups();
+    });
+  };
+
+  function handleUpdateAvatar(avatarLink) {
+    api.setAvatar(avatarLink)
+    .then((updatedUserData) => {
+      setCurrentUser(updatedUserData);
+      closeAllPopups();
+    });
+  };
+
+  function handleAddPlaceSubmit(dataCard) {
+    api.addCard(dataCard)
+    .then((newCard) => {
+      setCards([newCard, ...cards]);
+      closeAllPopups();
+    });
+  };
+
   return (
-<div className="page">
-  <Header />
-  <Main 
-  onEditProfile={handleEditProfileClick} 
-  onAddPlace={handleAddPlaceClick} 
-  onEditAvatar={handleEditAvatarClick}
-  onCardClick={handleCardClick} />
+    <CurrentUserContext.Provider value={currentUser}>
+      <div className="page">
+      <Header />
+      <Main
+        cards={cards} 
+        onEditProfile={handleEditProfileClick} 
+        onAddPlace={handleAddPlaceClick} 
+        onEditAvatar={handleEditAvatarClick}
+        onCardClick={handleCardClick}
+        onDeleteClick={handleCardDelete}
+        onCardLike={handleCardLike} 
+      />
+      <EditProfilePopup 
+        isOpen={isEditProfilePopupOpen} 
+        onClose={closeAllPopups} 
+        onUpdateUser={handleUpdateUser} 
+      />
+       <EditAvatarPopup 
+       isOpen={isEditAvatarPopupOpen} 
+       onClose={closeAllPopups}
+       onUpdateAvatar={handleUpdateAvatar} 
+      />
+      <AddPlacePopup
+      isOpen={isAddPlacePopupOpen}
+      onClose={closeAllPopups}
+      onAddPlace={handleAddPlaceSubmit}
+      />
 
-  <PopupWithForm 
-  name="profile" 
-  title="Редактировать профиль" 
-  isOpen={isEditProfilePopupOpen} 
-  onClose={closeAllPopups}
-  buttonText="Сохранить">
-        <input 
-      type="text" 
-      id="name-input" 
-      name="name" 
-      className="form__input form__input_data_name" 
-      placeholder="Имя" 
-      minLength={2} 
-      maxLength={40} 
-      required=""/>
-    <span className="form__input-error name-input-error" />
-    <input 
-      type="text" 
-      id="info-input" 
-      name="about" 
-      className="form__input form__input_data_info" 
-      placeholder="Описание" 
-      minLength={2} 
-      maxLength={200} 
-      required=""/>
-    <span className="form__input-error info-input-error" />
-  </PopupWithForm>
 
-  <PopupWithForm 
-  name="card" 
-  title="Новое место" 
-  isOpen={isAddPlacePopupOpen} 
-  onClose={closeAllPopups}
-  buttonText="Создать">
-    <input 
-      type="text" 
-      id="place-input" 
-      name="name" 
-      className="form__input form__input_place_name" 
-      placeholder="Название" 
-      minLength={2} 
-      maxLength={30} 
-      required=""/>
-    <span className="form__input-error place-input-error"/>
-    <input 
-      type="url" 
-      id="link-input" 
-      name="link" 
-      className="form__input form__input_place_link" 
-      placeholder="Ссылка на картинку" 
-      required=""/>
-    <span className="form__input-error link-input-error"/>
+      <PopupWithForm 
+        name="confirmation" 
+        title="Вы уверены?"
+        buttonText="Да">
+      </PopupWithForm>
 
-  </PopupWithForm>
-
-  <PopupWithForm 
-  name="avatar" 
-  title="Обновить аватар" 
-  isOpen={isEditAvatarPopupOpen} 
-  onClose={closeAllPopups}
-  buttonText="Сохранить">
-    <input 
-      type="url" 
-      id="avatar-input" 
-      name="avatar" 
-      className="form__input form__input_avatar_link" 
-      placeholder="Ссылка на аватар" 
-      required=""/>
-    <span className="form__input-error avatar-input-error" />
-  </PopupWithForm>
-
-  <PopupWithForm 
-  name="confirmation" 
-  title="Вы уверены?"
-  buttonText="Да">
-  </PopupWithForm>
-
-  <ImagePopup card={selectedCard} onClose={closeAllPopups} />
-  <Footer />
-  <template className="template" />
-</div>
-  );
+      <ImagePopup card={selectedCard} onClose={closeAllPopups} />
+      <Footer />
+    </div>
+  </CurrentUserContext.Provider>
+ );
 }
 
 export default App;

@@ -3,7 +3,7 @@ class Api {
   constructor({baseUrl, headers}) {
     this._baseUrl = baseUrl;
     this._headers = headers;
-  }
+  };
 
   // проверить статус запроса
   _checkStatus(res) {
@@ -11,15 +11,15 @@ class Api {
       return res.json();
     } else {
       return Promise.reject(`${res.status} ${res.statusText}`);
-    }
-  }
+    };
+  };
 
   // получить данные пользователя с сервера
   getUserData() {
     return fetch(this._baseUrl + '/users/me', {
       headers: this._headers
     }).then(this._checkStatus);
-  }
+  };
 
   // обновить данные пользователя на сервере
   setUserData(userData) {
@@ -31,7 +31,7 @@ class Api {
         about: userData.about
       })
     }).then(this._checkStatus);
-  }
+  };
 
   // обновить аватар пользователя
   setAvatar(link) {
@@ -42,14 +42,14 @@ class Api {
         avatar: link
       })
     }).then(this._checkStatus);
-  }
+  };
 
   // получить карточки с сервера
   getInitialCards() {
     return fetch( this._baseUrl + '/cards', {
       headers: this._headers
     }).then(this._checkStatus);
-  }
+  };
 
   // добавить карточку на сервер
   addCard(dataCard) {
@@ -61,8 +61,7 @@ class Api {
         link: dataCard.link
       })
     }).then(this._checkStatus);
-
-  }
+  };
 
   // удалить карточку с сервера
   deleteCard(cardId) {
@@ -73,7 +72,7 @@ class Api {
         _id: cardId
       })
     }).then(this._checkStatus);
-  }
+  };
 
   // лайкнуть
   like(cardId) {
@@ -84,7 +83,7 @@ class Api {
         _id: cardId
       })
     }).then(this._checkStatus);
-  }
+  };
 
   // убрать лайк
   dislike(cardId) {
@@ -95,8 +94,16 @@ class Api {
         _id: cardId
       })
     }).then(this._checkStatus);
-  }
-}
+  };
+
+  changeLikeCardStatus(cardId, isLiked) {
+    if (isLiked) {
+      return this.like(cardId);
+    } else {
+      return this.dislike(cardId);
+    };
+  };
+};
 
 // API
 const api = new Api ({
