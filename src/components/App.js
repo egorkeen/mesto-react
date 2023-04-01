@@ -17,7 +17,7 @@ function App() {
   const [isAddPlacePopupOpen, setAddPlacePopupOpen] = useState(false);
   const [isEditAvatarPopupOpen, setEditAvatarPopupOpen] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
-  const [currentUser, setCurrentUser] = useState();
+  const [currentUser, setCurrentUser] = useState({});
 
 useEffect(() => {
   api.getUserData()
@@ -81,7 +81,8 @@ useEffect(() => {
     api.changeLikeCardStatus(card._id, !isLiked)
     .then((newCard) => {
       setCards((state) => state.map((c) => c._id === card._id ? newCard : c));
-    });
+    })
+    .catch((err) => console.log(err));
   };
 
   function handleUpdateUser(userData) {
@@ -89,7 +90,8 @@ useEffect(() => {
     .then((updatedUserData) => {
       setCurrentUser(updatedUserData);
       closeAllPopups();
-    });
+    })
+    .catch((err) => console.log(err));
   };
 
   function handleUpdateAvatar(avatarLink) {
@@ -97,7 +99,8 @@ useEffect(() => {
     .then((updatedUserData) => {
       setCurrentUser(updatedUserData);
       closeAllPopups();
-    });
+    })
+    .catch((err) => console.log(err));
   };
 
   function handleAddPlaceSubmit(dataCard) {
@@ -105,7 +108,8 @@ useEffect(() => {
     .then((newCard) => {
       setCards([newCard, ...cards]);
       closeAllPopups();
-    });
+    })
+    .catch((err) => console.log(err));
   };
 
   return (
