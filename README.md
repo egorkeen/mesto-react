@@ -19,7 +19,5 @@
 
 Git-репозиторий - https://github.com/egorkeen/mesto-react/
 
-Ссылка на GitHub Pages - https://egorkeen.github.io/mesto-react/
-
 Статус - в доработке ⌛
 
